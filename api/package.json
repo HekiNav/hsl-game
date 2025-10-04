@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-ws": "^5.0.2",
+    "lowdb": "^7.0.1",
+    "mqtt": "^5.14.1",
+    "sqlite3": "^5.1.7"
+  },
+  "scripts": {
+    "start": "node ./index"
+  },
+  "type": "module"
+}

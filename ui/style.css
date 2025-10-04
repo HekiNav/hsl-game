@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+}
+#container {
+    padding: 0;
+}
+#map {
+    height: 100vh;
+}
+@font-face {
+    font-family: "Gotham Rounded";
+    src: url("./font/gotham-rounded-medium.otf");
+}
+#busMarker {
+    --rotation: 0deg;
+}
+#busMarker:after{
+    display: inline-block;
+    content: "";
+    transform: translate(0,0) rotate(var(--rotation));
+    font-family: "Gotham Rounded";
+    color: white;
+}
+div.text-center-custom {
+    height: 32px;
+    width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

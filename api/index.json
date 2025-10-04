@@ -1,0 +1,11 @@
+{
+    "name": "Hekinav API",
+    "path":"/",
+    "type":"listing",
+    "endpoints": [
+        {
+            "path":"hsl-gambling/",
+            "desc": "API for the HSL Gambling Game (see !a(https://github.com/hekinav/hsl-gambling))"
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+{
+    "name": "HSL Gambling API",
+    "path":"/hsl-gambling",
+    "type":"docs",
+    "methods": [
+        {
+            "path":"/echo?msg={message}",
+            "desc":"Test method to see if the API is running correctly",
+            "message": {
+                "type": "string",
+                "desc": "Test string to be echoed back by the server",
+                "values": [
+                    "any string"
+                ]
+            },
+            "examples": [
+                {
+                    "message":"Hello World!"
+                }
+            ]
+        }
+    ]
+}
