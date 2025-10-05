@@ -28,7 +28,8 @@
                 "values": [
                     "********-****-****-****-************"
                 ]
-            }
+            },
+            "examples": []
         },
         {
             "path":"/coins?user={user_id}",
@@ -39,7 +40,13 @@
                 "values": [
                     "********-****-****-****-************"
                 ]
-            }
+            },
+            "examples": []
+        },
+        {
+            "path":"/new_user",
+            "desc":"Generates a new user. Returns a UUID and a name.",
+            "examples": []
         }
     ]
 }
