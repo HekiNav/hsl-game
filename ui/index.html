@@ -19,11 +19,12 @@
             </div>
             <div class="col-md-4 m-3" id="sidebar">
                 <h1 class="text-center">HSL Games</h1>
+                <!-- USER CREATION -->
                 <div class="container text-center mt-5 view" id="no_user" hidden>
                     <h4 class="text-center">No user cookie found</h2>
                         <button class="btn btn-primary" onclick="newUser()">Create new user</button>
                 </div>
-                <div class="container text-center mt-5 view" id="creating_user">
+                <div class="container text-center mt-5 view" id="creating_user" hidden>
                     <h4 class="text-center">Creating user</h4>
                     <button class="btn btn-primary">
                         <div class="d-flex justify-content-center">
@@ -33,62 +34,76 @@
                         </div>
                     </button>
                 </div>
-                <div class="container text-center mt-5 view" id="game_loading">
+                <!-- WAITING FOR A BUS -->
+                <div class="container text-center mt-5 view" id="game_loading" hidden>
                     <h4 class="text-center">Loading</h4>
                     <div class="d-flex justify-content-center m-4">
                         <div class="spinner-border spinner-border-lg" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <div class="card text-bg-light mb-3" style="max-width: 18rem;">
+                    <div class="card text-bg-light mb-3">
                         <div class="card-body">
                             <p class="card-text">Waiting for a bus...</p>
                         </div>
                     </div>
                 </div>
-                <div class="container text-center mt-5 view" id="loading_trip">
+                <!-- LOADING PAGE (DEFAULT) -->
+                <div class="container text-center mt-5 view" id="page_loading">
                     <h4 class="text-center">Loading</h4>
                     <div class="d-flex justify-content-center m-4">
                         <div class="spinner-border spinner-border-lg" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <div class="card text-bg-light mb-3" style="max-width: 18rem;">
+                    <div class="card text-bg-light mb-3">
+                        <div class="card-body">
+                            <p class="card-text">Loading content</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- LOADING TRIP -->
+                <div class="container text-center mt-5 view" id="loading_trip" hidden>
+                    <h4 class="text-center">Loading</h4>
+                    <div class="d-flex justify-content-center m-4">
+                        <div class="spinner-border spinner-border-lg" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="card text-bg-light mb-3">
                         <div class="card-body">
                             <p class="card-text">Waiting for a bus...</p>
                         </div>
                     </div>
-                    <div class="card text-bg-light mb-3" style="max-width: 18rem;">
+                    <div class="card text-bg-light mb-3">
                         <div class="card-body">
                             <p class="card-text">Fetching trip data...</p>
                         </div>
                     </div>
                 </div>
-                <div class="container text-center mt-5 view" id="loading_error">
-                    <h4 class="text-center">Loading</h4>
-                    <div class="d-flex justify-content-center m-4">
-                        <div class="spinner-border spinner-border-lg" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                    <div class="card text-bg-light mb-3" style="max-width: 18rem;">
+                <!-- SERVER ERROR -->
+                <div class="container text-center mt-5 view" id="loading_error" hidden>
+                    <h4 class="text-center mb-3">Loading</h4>
+                    <div class="card text-bg-light mb-3">
                         <div class="card-body">
                             <p class="card-text">Waiting for a bus...</p>
                         </div>
                     </div>
-                    <div class="card text-bg-danger mb-3" style="max-width: 18rem;">
+                    <div class="card text-bg-danger mb-3">
                         <div class="card-body">
                             <p class="card-text">An error occurred on the server</p>
                         </div>
                     </div>
+                    <button class=" btn btn-light btn-lg" onclick="game()">Try again</button>
                 </div>
-                <div class="container text-center mt-5 view" id="main">
+                <!-- MAIN -->
+                <div class="container text-center mt-5 view" id="main" hidden>
                     <h4 class="text-center mb-3 replace" data-replace="user">Welcome user <span
                             class="badge text-bg-primary">{{user_name}}</span></h4>
                     <button class=" btn btn-primary btn-lg" onclick="game()">New Game</button>
-
                 </div>
-                <div class="container text-center mt-5 view" id="game">
+                <!-- GAME -->
+                <div class="container text-center mt-5 view" id="game" hidden>
                     <h4 class="text-center mb-3 replace" data-replace="trip">Line <span
                             class="badge text-bg-light"><span class="badge m-0 p-1"
                                 style="background-color: {{color}} !important">{{short_name}}</span>
@@ -98,15 +113,18 @@
                             {{next_stop_name}}</span><br><br>
                         Bet on whether it stops or not.
                     </h4>
+                    <h4 class="text-center replace mb-3" data-replace="user">
+                        Your coins: {{coins}}
+                    </h4>
                     <div class="d-flex justify-content-center m-4">
-                        <div class="input-group mb-3">
+                        <div class="input-group mb-3 replace" data-replace="odds">
                             <input type="radio" class="btn-check betUi" name="vbtn-radio" id="betYes" checked>
-                            <label class="btn btn-outline-success rounded-start" for="betYes">Yes</label>
+                            <label class="btn btn-outline-success rounded-start" for="betYes">Yes ({{s}}x)</label>
 
-                            <input type="text" class="form-control betUi" placeholder="100">
+                            <input type="number w-100" class="form-control betUi" id="betAmount" placeholder="100" style="min-width: 3rem;">
 
                             <input type="radio" class="btn-check betUi" name="vbtn-radio" id="betNo">
-                            <label class="btn btn-outline-danger" for="betNo">No</label>
+                            <label class="btn btn-outline-danger" for="betNo">No ({{n}}x)</label>
                         </div>
                     </div>
 
@@ -119,6 +137,7 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+    <script src="mapbox-polyline.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>

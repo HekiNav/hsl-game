@@ -10,6 +10,5 @@
   </rdf:RDF>
  </metadata>
  <rect width="16" height="16" fill="none"/>
- <circle cx="8" cy="8" r="6" fill="#007ac9"/>
- <path transform="matrix(1.0636 0 0 .64988 -1.005 2.3631)" d="m13.168 4.5063-9.402-1e-7 4.701-8.1424z" fill="#007ac9"/>
+ <path transform="scale(.5)" d="m16.002 0-4.6758 4.9492a12 12 0 0 0-7.3262 11.051 12 12 0 0 0 12 12 12 12 0 0 0 12-12 12 12 0 0 0-7.3203-11.049l-4.6777-4.9512z" stroke-width="1.6628"/>
 </svg>

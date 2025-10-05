@@ -11,6 +11,10 @@ const app = express()
 
 expressWs(app)
 
+let statusData = {
+  lastMqttMessage: null,
+  numMessages: 0
+}
 
 let depFunc
 
@@ -72,21 +76,55 @@ export default function () {
       res.json({ id: uuid, name: name })
     })
     app.get("/coins", (req, res) => {
-      const coins = getUserCoins(req.query.user)
-      res.json({ coins: coins })
+      getUserCoins(req.query.user).then(coins => {
+        res.json({ coins: coins })
+      })
+
+    })
+    app.get("/status", (req, res) => {
+      res.json(statusData)
     })
     app.ws('/game', function (ws, req) {
+      const user = req.query.user
+      console.log(user)
       startGame(req.query.user).then((startData => {
         ws.send(JSON.stringify(startData))
         ws.on('message', function (msg) {
-          ws.send(msg);
+          const data = JSON.parse(msg)
+          if (data.type != "end") return
+          finishGame(data.bet, data.stopped, data.amount, user, startData.odds)
         });
       }))
     });
   })
   return app
 }
+async function finishGame(bet, stopped, betAmount, userId, odds) {
+  const multiplier = odds[stopped ? "s" : "n"]
 
+  console.log(bet, stopped, betAmount, userId, odds, multiplier)
+  if (bet == stopped) {
+    db.run(
+      `UPDATE users
+     SET coins = max(coins, ?) * ?
+     WHERE id = ?`,
+      [betAmount, multiplier, userId], (a, err) => {
+        if (err) console.error(err)
+        if (a) console.error(a)
+      }
+    );
+  } else {
+    db.run(
+      `UPDATE users
+     SET coins = coins - max(coins, ?)
+     WHERE id = ?`,
+      [betAmount, userId], (a, err) => {
+        if (err) console.error(err)
+        if (a) console.error(a)
+      }
+    );
+  }
+}
 function generateUser() {
   const uuid = randomUUID()
   const name = randomInt(2 ** 16)
@@ -102,11 +140,7 @@ async function startGame() {
   })
   const data = await promise
 
-  const weights = await getStopWeight(data.sp, data.de)
 
-  if (!weights) {
-    return await startGame()
-  }
 
   const time = Number(data.st.substring(0, 2)) * 3600 + Number(data.st.substring(3, 5)) * 60
   const query = `
@@ -122,14 +156,94 @@ async function startGame() {
   `
   const response = await getGraphQl(query)
 
-  const totalEvents = Object.values(weights).reduce((prev, curr) => prev + curr, 0)
-  const stoppingOdds = { s: weights.s / totalEvents, n: weights.n / totalEvents }
+  if (response.data.fuzzyTrip) {
 
-  if (response.data.fuzzyTrip && stoppingOdds.s % 1 != 0) {
-    console.log(stoppingOdds, weights, stoppingOdds.s % 1)
-    return { tripId: response.data.fuzzyTrip.gtfsId, mqttData: data }
+    const tripData = await getTripData(response.data.fuzzyTrip.gtfsId)
+
+    if (!tripData.route) {
+      return { error: "Could not get trip data", autoReload: true }
+    }
+
+    const date = new Date(Date.now())
+    const now = date.getHours() * 3600 + date.getMinutes() * 60
+    const next_stop = tripData.stoptimesForDate.find(t => (t.realtimeArrival || t.scheduledArrival) > now + 60)
+
+    if (!next_stop) {
+      return { error: "Could not get next stop", autoReload: true }
+    }
+
+    const weights = await getStopWeight(next_stop.stop.gtfsId.substring(4, 11), data.de)
+
+    if (!weights) {
+      return { error: "Could not get stopping odds", autoReload: true }
+    }
+
+    const totalEvents = Object.values(weights).reduce((prev, curr) => prev + curr, 0)
+    const stoppingOdds = { s: weights.s / totalEvents, n: weights.n / totalEvents }
+
+    if (stoppingOdds.s % 1 == 0) {
+      return { error: "Invalid stopping odds", autoReload: true }
+    }
+    const stoppingMultipliers = { s: Math.round(totalEvents / weights.s * 10) / 10, n: Math.floor(totalEvents / weights.n * 10) / 10 }
+
+    console.log(stoppingMultipliers, weights)
+    return { nextStop: next_stop, odds: stoppingMultipliers, route: tripData.route, tripId: response.data.fuzzyTrip.gtfsId, mqttData: data }
   }
-  return { error: "Could not mach trip" }
+  return { error: "Could not match trip" }
+}
+
+async function getUserCoins(user_id) {
+  const data = await new Promise((resolve, reject) => {
+    db.get(
+      `SELECT * FROM users WHERE id=?
+     `,
+      [user_id], (err, data) => {
+        if (err) {
+          console.error(err)
+          reject()
+        }
+        else resolve(data)
+      }
+    );
+  })
+  return data ? data.coins : null
+}
+
+async function getTripData(tripId) {
+  const data = await getGraphQl(`
+{
+  trip(id: "${tripId}") {
+    route {
+      longName
+      shortName
+      type
+      patterns {
+        directionId
+        patternGeometry {
+          length
+          points
+        }
+      }
+    }
+    stoptimesForDate {
+      headsign
+      realtimeState
+      realtimeArrival
+      realtimeDeparture
+      scheduledDeparture
+      scheduledArrival
+      stop {
+        name
+        gtfsId
+        code
+        lat
+        lon
+      }
+    }
+  }
+}        
+`)
+  return await data.data.trip
 }
 function handleMessage(topic, message) {
   const messageData = Object.entries(JSON.parse(message.toString()))[0]
@@ -149,6 +263,8 @@ function handleMessage(topic, message) {
     direction_id, headsign, start_time, next_stop, geohash_level,
     geohash, sid] = topic.split("/")
   if (stop && (event == "ARS" || event == "PAS")) {
+    statusData.lastMqttMessage = new Date(Date.now()).toISOString()
+    statusData.numMessages++
     addStopWeight(stop, event == "ARS", desi)
   }
   if (event == "DEP" && depFunc) {
@@ -170,7 +286,10 @@ async function addStopWeight(stopID, stopped = false, routeID) {
     `UPDATE stats
      SET s = s + ?, n = n + ?
      WHERE stop_id = ? AND route_id = ? AND is_weekday = ? AND hour = ?`,
-    [stopped ? 1 : 0, stopped ? 0 : 1, stopID, routeID, isWeekday, hour]
+    [stopped ? 1 : 0, stopped ? 0 : 1, stopID, routeID, isWeekday, hour], (a, err) => {
+      if (err) console.error(err)
+      if (a) console.error(a)
+    }
   );
   //console.log(stopID, routeID, isWeekday ? "weekday" : "weekend", hour, stopped ? "s" : "n")
 }
@@ -199,6 +318,8 @@ async function getStopWeight(stopID, routeID) {
         }))
       }
     );
+  }).catch(err => {
+    console.error(err)
   })
   return data
 }
