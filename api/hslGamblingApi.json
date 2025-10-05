@@ -40,10 +40,6 @@
                     "********-****-****-****-************"
                 ]
             }
-        },
-        {
-            "path":"/new_user",
-            "desc":"Generates a new user. Returns a UUID and a name."
         }
     ]
 }
