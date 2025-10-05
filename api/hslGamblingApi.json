@@ -5,7 +5,7 @@
     "methods": [
         {
             "path":"/echo?msg={message}",
-            "desc":"Test method to see if the API is running correctly",
+            "desc":"Test method to see if the API is running correctly,",
             "message": {
                 "type": "string",
                 "desc": "Test string to be echoed back by the server",
@@ -18,6 +18,32 @@
                     "message":"Hello World!"
                 }
             ]
+        },
+        {
+            "path":"/game?user={user_id}",
+            "desc":"Begins a new game. IMPORTANT! This is a WebSocket path.",
+            "user_id": {
+                "type": "string",
+                "desc": "User UUID",
+                "values": [
+                    "********-****-****-****-************"
+                ]
+            }
+        },
+        {
+            "path":"/coins?user={user_id}",
+            "desc":"Gets coins for a user.",
+            "user_id": {
+                "type": "string",
+                "desc": "User UUID",
+                "values": [
+                    "********-****-****-****-************"
+                ]
+            }
+        },
+        {
+            "path":"/new_user",
+            "desc":"Generates a new user. Returns a UUID and a name."
         }
     ]
 }
