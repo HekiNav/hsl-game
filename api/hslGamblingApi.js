@@ -54,7 +54,7 @@ export default function () {
 
     client.on("message", handleMessage)
 
-    client.on("disconnect",() => {
+    client.on("disconnect", () => {
       console.log("HSL Gambling API: MQTT Disconnected: Reconnecting")
       client.reconnect()
     })
@@ -102,12 +102,16 @@ async function startGame() {
   })
   const data = await promise
 
-  const weights = await getStopWeight(data.sp,data.de)
+  const weights = await getStopWeight(data.sp, data.de)
 
-  const time = Number(data.st.substring(0,2)) * 3600 + Number(data.st.substring(3,5)) * 60
+  if (!weights) {
+    return await startGame()
+  }
+
+  const time = Number(data.st.substring(0, 2)) * 3600 + Number(data.st.substring(3, 5)) * 60
   const query = `
 {
-  fuzzyTrip(route: "HSL:${data.rn}", direction: ${Number(data.di)-1}, date: "${data.dt}", time: ${time}) {
+  fuzzyTrip(route: "HSL:${data.rn}", direction: ${Number(data.di) - 1}, date: "${data.dt}", time: ${time}) {
     route {
       shortName
       longName
@@ -117,15 +121,20 @@ async function startGame() {
 }
   `
   const response = await getGraphQl(query)
-  if (response.data.fuzzyTrip) {
-    return {tripId: response.data.fuzzyTrip.gtfsId, mqttData: data}
+
+  const totalEvents = Object.values(weights).reduce((prev, curr) => prev + curr, 0)
+  const stoppingOdds = { s: weights.s / totalEvents, n: weights.n / totalEvents }
+
+  if (response.data.fuzzyTrip && stoppingOdds.s % 1 != 0) {
+    console.log(stoppingOdds, weights, stoppingOdds.s % 1)
+    return { tripId: response.data.fuzzyTrip.gtfsId, mqttData: data }
   }
-  return {error: "Could not mach trip"}
+  return { error: "Could not mach trip" }
 }
 function handleMessage(topic, message) {
   const messageData = Object.entries(JSON.parse(message.toString()))[0]
   const [event, props] = messageData
-  const { 
+  const {
     desi, dir, oper, veh, tst,
     tsi, spd, hdg, lat, long,
     acc, dl, odo, drst, oday,
@@ -143,7 +152,7 @@ function handleMessage(topic, message) {
     addStopWeight(stop, event == "ARS", desi)
   }
   if (event == "DEP" && depFunc) {
-    depFunc({ di: dir, rn: route, ts: tst, dt: oday, st: start, sp: stop, de: desi})
+    depFunc({ di: dir, rn: route, ts: tst, dt: oday, st: start, sp: stop, de: desi })
   }
 }
 
@@ -170,17 +179,27 @@ async function getStopWeight(stopID, routeID) {
   const isWeekday = date.getDay() >= 1 && date.getDay() <= 5
   const hour = date.getHours()
 
-  console.log(`SELECT * FROM stats
-     WHERE stop_id=? AND route_id=? AND is_weekday=? AND hour=?
-     `,stopID, routeID, isWeekday, hour)
-
-  const data = await db.get(
-    `SELECT * FROM stats
-        WHERE stop_id=${stopID} AND route_id="${routeID}" AND is_weekday=${isWeekday} AND hour=${hour}
+  const data = await new Promise((resolve, reject) => {
+    db.all(
+      `SELECT * FROM stats WHERE stop_id=? AND route_id=? AND is_weekday=?
      `,
-    [stopID, routeID, isWeekday, hour], (err, data)
-  );
-  console.log(data)
+      [stopID, routeID, isWeekday], (err, data) => {
+        if (err) {
+          console.error(err)
+          reject()
+        }
+        else resolve(data.reduce((curr, prev) => {
+          return {
+            s: prev.s + curr.s,
+            n: prev.n + curr.n
+          }
+        }, {
+          s: 0,
+          n: 0
+        }))
+      }
+    );
+  })
   return data
 }
 

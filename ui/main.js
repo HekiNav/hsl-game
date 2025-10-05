@@ -42,7 +42,7 @@ const map = new mapboxgl.Map({
     center: [24.9, 60.2], // starting position [lng, lat]. Note that lat must be set between -90 and 90
     zoom: 10 // starting zoom
 });
-
+initContent()
 
 function replace(template, data) {
     const pattern = /{{\s*(\w+?)\s*}}/g; // {property}
@@ -50,13 +50,14 @@ function replace(template, data) {
 }
 function initContent() {
     sidebar.querySelectorAll("div.view").forEach(view => {
-        view.hidden = view.id != mode
-        if (view.id == mode)
-            view.querySelectorAll(".replace").forEach(replaceContent)
+        view.querySelectorAll(".replace").forEach(e => {
+            console.log(e)
+            e.setAttribute("data-content",e.innerHTML)
+        })
     })
 }
 function replaceContent(element) {
-    element.innerHTML = replace(element.innerHTML, data[element.getAttribute("data-replace")])
+    element.innerHTML = replace(element.getAttribute("data-content"), data[element.getAttribute("data-replace")])
 }
 function sideBarMode(mode) {
     sidebar.querySelectorAll("div.view").forEach(view => {
