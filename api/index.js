@@ -10,7 +10,7 @@ const app = express()
 
 expressWs(app)
 
-const port = 3001
+const port = 39149
 app.use(cors())
 app.use("/hsl-gambling", hslGamblingApi())
 app.listen(port, () => {
