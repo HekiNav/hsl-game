@@ -46,12 +46,18 @@ export default function () {
     const client = mqtt.connect("wss://mqtt.hsl.fi:443/");
 
     client.on("connect", () => {
+      console.log("HSL Gambling API: Connecting: Subscribing")
       client.subscribe("/hfp/v2/journey/ongoing/+/#", (err) => {
         if (err) console.error("MQTT connection failed: ", err)
       });
     });
 
     client.on("message", handleMessage)
+
+    client.on("disconnect",() => {
+      console.log("HSL Gambling API: MQTT Disconnected: Reconnecting")
+      client.reconnect()
+    })
 
     console.log("Starting HSL Gambling API: Creating endpoints")
 
@@ -95,6 +101,9 @@ async function startGame() {
     depFunc = resolve;
   })
   const data = await promise
+
+  const weights = await getStopWeight(data.sp,data.de)
+
   const time = Number(data.st.substring(0,2)) * 3600 + Number(data.st.substring(3,5)) * 60
   const query = `
 {
@@ -116,7 +125,7 @@ async function startGame() {
 function handleMessage(topic, message) {
   const messageData = Object.entries(JSON.parse(message.toString()))[0]
   const [event, props] = messageData
-  const {
+  const { 
     desi, dir, oper, veh, tst,
     tsi, spd, hdg, lat, long,
     acc, dl, odo, drst, oday,
@@ -134,7 +143,7 @@ function handleMessage(topic, message) {
     addStopWeight(stop, event == "ARS", desi)
   }
   if (event == "DEP" && depFunc) {
-    depFunc({ di: dir, rn: route, ts: tst, dt: oday, st: start })
+    depFunc({ di: dir, rn: route, ts: tst, dt: oday, st: start, sp: stop, de: desi})
   }
 }
 
@@ -155,6 +164,24 @@ async function addStopWeight(stopID, stopped = false, routeID) {
     [stopped ? 1 : 0, stopped ? 0 : 1, stopID, routeID, isWeekday, hour]
   );
   //console.log(stopID, routeID, isWeekday ? "weekday" : "weekend", hour, stopped ? "s" : "n")
+}
+async function getStopWeight(stopID, routeID) {
+  const date = new Date(Date.now())
+  const isWeekday = date.getDay() >= 1 && date.getDay() <= 5
+  const hour = date.getHours()
+
+  console.log(`SELECT * FROM stats
+     WHERE stop_id=? AND route_id=? AND is_weekday=? AND hour=?
+     `,stopID, routeID, isWeekday, hour)
+
+  const data = await db.get(
+    `SELECT * FROM stats
+        WHERE stop_id=${stopID} AND route_id="${routeID}" AND is_weekday=${isWeekday} AND hour=${hour}
+     `,
+    [stopID, routeID, isWeekday, hour], (err, data)
+  );
+  console.log(data)
+  return data
 }
 
 async function getGraphQl(query) {

@@ -89,33 +89,23 @@
 
                 </div>
                 <div class="container text-center mt-5 view" id="game">
-                    <h4 class="text-center mb-3 replace" data-replace="trip">
-                        <h4 class="text-center mb-3 replace" data-replace="trip">Line <span
-                                class="badge text-bg-light"><span class="badge m-0 p-1"
-                                    style="background-color: {{color}} !important">{{short_name}}</span>
-                                {{long_name}}</span> is arriving
-                            soon at <span class="badge text-bg-light"><span class="badge m-0 p-1"
-                                    style="background-color: {{color}} !important">{{next_stop_code}} </span>
-                                {{next_stop_name}}</span><br><br> 
-                                Bet on whether it stops or not
-                        </h4>
+                    <h4 class="text-center mb-3 replace" data-replace="trip">Line <span
+                            class="badge text-bg-light"><span class="badge m-0 p-1"
+                                style="background-color: {{color}} !important">{{short_name}}</span>
+                            {{long_name}}</span> is arriving
+                        soon at <span class="badge text-bg-light"><span class="badge m-0 p-1"
+                                style="background-color: {{color}} !important">{{next_stop_code}} </span>
+                            {{next_stop_name}}</span><br><br>
+                        Bet on whether it stops or not.
                     </h4>
                     <div class="d-flex justify-content-center m-4">
-                        <div class="btn-group-lg btn-group" role="group" aria-label="Large button group">
-                            <input type="radio" class="btn-check" name="vbtn-radio" id="betYes" autocomplete="off"
-                                checked>
-                            <label class="btn btn-outline-success" for="betYes">Yes</label>
-                            <div class="btn-group border-top border-bottom rounded-0" role="group">
-                                <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    100
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item">100</a></li>
-                                    <li><a class="dropdown-item">500</a></li>
-                                </ul>
-                            </div>
-                            <input type="radio" class="btn-check" name="vbtn-radio" id="betNo" autocomplete="off">
+                        <div class="input-group mb-3">
+                            <input type="radio" class="btn-check betUi" name="vbtn-radio" id="betYes" checked>
+                            <label class="btn btn-outline-success rounded-start" for="betYes">Yes</label>
+
+                            <input type="text" class="form-control betUi" placeholder="100">
+
+                            <input type="radio" class="btn-check betUi" name="vbtn-radio" id="betNo">
                             <label class="btn btn-outline-danger" for="betNo">No</label>
                         </div>
                     </div>

@@ -48,6 +48,13 @@ function replace(template, data) {
     const pattern = /{{\s*(\w+?)\s*}}/g; // {property}
     return template.replace(pattern, (_, token) => data[token] || '');
 }
+function initContent() {
+    sidebar.querySelectorAll("div.view").forEach(view => {
+        view.hidden = view.id != mode
+        if (view.id == mode)
+            view.querySelectorAll(".replace").forEach(replaceContent)
+    })
+}
 function replaceContent(element) {
     element.innerHTML = replace(element.innerHTML, data[element.getAttribute("data-replace")])
 }
@@ -160,12 +167,22 @@ function followTrip(tripData, nextStopLatLng, nextStopId, routeNumber) {
                 busMarker.setRotation(update.hdg)
                 marker1.style.setProperty("--rotation", 360 % (360 - update.hdg))
             }
-
-            if (updateType == "ARS" || updateType == "PAS") {
-                if ("HSL:"+update.stop == nextStopId) {
-                    console.log(updateType == "ARS" ? "STOPPED" : "DIDN'T STOP")
+            if ("HSL:" + update.stop == nextStopId) {
+                // Stop is the one
+                switch (updateType) {
+                    case "ARS":
+                        break
+                    case "PAS":
+                        break
+                    case "DUE":
+                        console.log("inputs disabled")
+                        document.querySelectorAll(".betUi").forEach(e => e.disabled = true)
+                        break
+                    default:
+                        break
                 }
             }
+
             if (updateType != "VP" || first) {
                 map.fitBounds([
                     nextStopLatLng,
@@ -181,6 +198,11 @@ function followTrip(tripData, nextStopLatLng, nextStopId, routeNumber) {
     })
 
 
+}
+function getInputs() {
+    const dropdownElementList = document.querySelectorAll('.dropdown-toggle')
+    const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl))
+    console.log(dropdownList)
 }
 function easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : - 1 + (4 - 2 * t) * t;
@@ -231,6 +253,8 @@ function getRouteColor(type) {
             return COLOR_TABLE.rail
         case 0:
             return COLOR_TABLE.tram
+        case 900:
+            return COLOR_TABLE.speedtram
         default:
             console.log(type)
             return COLOR_TABLE.replacementBus
