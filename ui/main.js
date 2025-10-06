@@ -277,10 +277,10 @@ function followTrip(gameSocket, tripData, nextStopLatLng, nextStopId, routeNumbe
                 // Stop is the one
                 switch (updateType) {
                     case "ARS":
-                        endGame(true, gameSocket)
+                        endGame(true, gameSocket, client)
                         break
                     case "PAS":
-                        endGame(false, gameSocket)
+                        endGame(false, gameSocket, client)
                         break
                     case "DUE":
                         console.log("inputs disabled")
@@ -307,12 +307,15 @@ function followTrip(gameSocket, tripData, nextStopLatLng, nextStopId, routeNumbe
 
 
 }
-function endGame(stopped, gameSocket) {
+function endGame(stopped, gameSocket, mqttClient) {
     const bet = document.getElementById("betYes").checked
     const amount = document.getElementById("betAmount").value
-    console.log(bet == stopped, amount.length ? amount : 100)
+    console.log(bet == stopped, Number(amount) ? amount : 100)
     gameSocket.send(JSON.stringify({ type: "end", bet: bet, stopped: stopped, amount: amount.length ? amount : 100 }))
     gameSocket.close()
+
+    mqttClient.end()
+
     data.odds.m = data.odds[stopped ? "s" : "n"]
     getCoins().then(coins => {
         data.user.coins = coins.coins
