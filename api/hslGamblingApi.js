@@ -106,7 +106,7 @@ async function finishGame(bet, stopped, betAmount, userId, odds) {
   if (bet == stopped) {
     db.run(
       `UPDATE users
-     SET coins = ceil(max(coins, ?) * ?)
+     SET coins = floor(max(coins, ?) * ?)
      WHERE id = ?`,
       [betAmount, multiplier, userId], (a, err) => {
         if (err) console.error(err)
@@ -163,7 +163,6 @@ async function startGame() {
     if (!tripData.route) {
       return { error: "Could not get trip data", autoReload: true }
     }
-
     const date = new Date(Date.now())
     const now = date.getHours() * 3600 + date.getMinutes() * 60
     const next_stop = tripData.stoptimesForDate.find(t => (t.realtimeArrival || t.scheduledArrival) > now + 60)

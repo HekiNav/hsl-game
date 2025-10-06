@@ -94,7 +94,7 @@ const ICONS = {
     <path fill="#333" d="M156.8 60.79999971h6.4v22.4a3.2 3.2 0 1 1-6.4 0z"/>
 </svg>`
 }
-const API_URL = "http://127.0.0.1:3001/hsl-gambling"
+const API_URL = "http://127.0.0.1:39149/hsl-gambling"//"https://hekinav.hackclub.app/hsl-gambling"
 
 const map = new mapboxgl.Map({
     style: "./data/custom_style.json",
@@ -102,7 +102,6 @@ const map = new mapboxgl.Map({
     center: [24.9, 60.2], // starting position [lng, lat]. Note that lat must be set between -90 and 90
     zoom: 10 // starting zoom
 });
-initContent()
 
 function replace(template, data) {
     const pattern = /{{\s*(\w+?)\s*}}/g; // {property}
@@ -323,6 +322,8 @@ if (localStorage.getItem("user")) {
 } else {
     sideBarMode("no_user")
 }
+initContent()
+
 function getRouteColor(type) {
     switch (type) {
         case 701:
