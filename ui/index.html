@@ -121,7 +121,8 @@
                             <input type="radio" class="btn-check betUi" name="vbtn-radio" id="betYes" checked>
                             <label class="btn btn-outline-success rounded-start" for="betYes">Yes ({{s}}x)</label>
 
-                            <input type="number w-100" class="form-control betUi" id="betAmount" placeholder="100" style="min-width: 3rem;">
+                            <input type="number w-100" class="form-control betUi" id="betAmount" placeholder="100"
+                                style="min-width: 3rem;">
 
                             <input type="radio" class="btn-check betUi" name="vbtn-radio" id="betNo">
                             <label class="btn btn-outline-danger" for="betNo">No ({{n}}x)</label>
@@ -129,7 +130,22 @@
                     </div>
 
                 </div>
+                <div class="container text-center mt-5 view" id="game_won" hidden>
+                    <h4 class="text-center mb-3 replace" data-replace="odds">You guessed correctly and got a {{m}}x multiplier on your bet!</h4>
 
+                    <h4 class="text-center replace mb-3" data-replace="user">
+                        You now have {{coins}} coins.
+                    </h4>
+                    <button class=" btn btn-primary btn-lg" onclick="play_again()">Play again</button>
+                </div>
+                <div class="container text-center mt-5 view" id="game_lost" hidden>
+                    <h4 class="text-center mb-3">Oh no! Your guess was wrong and you lost your bet.</h4>
+
+                    <h4 class="text-center replace mb-3" data-replace="user">
+                        You now have {{coins}} coins.
+                    </h4>
+                    <button class=" btn btn-primary btn-lg" onclick="play_again()">Play again</button>
+                </div>
             </div>
         </div>
 

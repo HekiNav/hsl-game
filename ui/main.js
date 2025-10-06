@@ -8,6 +8,7 @@ const sidebar = document.getElementById("sidebar")
 
 let busMarker
 let busTextMarker
+let stopMarker
 
 let data = {
     user: {
@@ -23,8 +24,10 @@ let data = {
     },
     odds: {
         s: 2,
-        n: 2
-    }
+        n: 2,
+        m: 2
+    },
+
 }
 
 const COLOR_TABLE = {
@@ -134,6 +137,14 @@ async function newUser() {
     localStorage.setItem("user", JSON.stringify(data.user))
     sideBarMode("main")
 }
+function play_again() {
+    map.removeLayer("route")
+    map.removeSource("route")
+    stopMarker.remove()
+    busMarker.remove()
+    busTextMarker.remove()
+    game()
+}
 function game() {
     sideBarMode("game_loading")
     const gameSocket = new WebSocket(API_URL + `/game?user=${data.user.user_id}`)
@@ -188,7 +199,7 @@ function game() {
             marker.id = "stopMarker"
             marker.style.width = "27px"
 
-            new mapboxgl.Marker({
+            stopMarker = new mapboxgl.Marker({
                 element: marker,
                 anchor: "bottom",
                 scale: 10
@@ -302,6 +313,11 @@ function endGame(stopped, gameSocket) {
     console.log(bet == stopped, amount.length ? amount : 100)
     gameSocket.send(JSON.stringify({ type: "end", bet: bet, stopped: stopped, amount: amount.length ? amount : 100 }))
     gameSocket.close()
+    data.odds.m = data.odds[stopped ? "s" : "n"]
+    getCoins().then(coins => {
+        data.user.coins = coins.coins
+        sideBarMode(bet == stopped ? "game_won" : "game_lost")
+    })
 }
 function getInputs() {
     const dropdownElementList = document.querySelectorAll('.dropdown-toggle')

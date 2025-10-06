@@ -107,7 +107,7 @@ async function finishGame(bet, stopped, betAmount, userId, odds) {
   if (bet == stopped) {
     db.run(
       `UPDATE users
-     SET coins = floor(max(coins, ?) * ?)
+     SET coins = floor(coins + max(coins, ?) * ?)
      WHERE id = ?`,
       [betAmount, multiplier, userId], (a, err) => {
         if (err) console.error(err)
