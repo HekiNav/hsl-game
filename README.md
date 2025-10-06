@@ -1,6 +1,12 @@
 # HSL Gambling
 A game where you gamble on actual buses stopping. 
 
+## Demo
+
+Play the game at [https://hekinav.github.io/hsl-game/](https://hekinav.github.io/hsl-game/).
+
+Please be patient with the api, sometimes it likes to think.
+
 ## Features
 
 **UI**
