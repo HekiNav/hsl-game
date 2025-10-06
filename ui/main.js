@@ -94,7 +94,7 @@ const ICONS = {
     <path fill="#333" d="M156.8 60.79999971h6.4v22.4a3.2 3.2 0 1 1-6.4 0z"/>
 </svg>`
 }
-const API_URL = "http://127.0.0.1:39149/hsl-gambling"//"https://hekinav.hackclub.app/hsl-gambling"
+const API_URL = /* "http://127.0.0.1:39149/hsl-gambling" */"https://hekinav.hackclub.app/hsl-gambling"
 
 const map = new mapboxgl.Map({
     style: "./data/custom_style.json",

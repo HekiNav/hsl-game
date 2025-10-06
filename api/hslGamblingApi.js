@@ -6,6 +6,7 @@ import apiDocsJson from "./hslGamblingApi.json" with {type: "json"}
 import sqlite3 from "sqlite3"
 import { randomFill, randomInt, randomUUID } from "node:crypto"
 import expressWs from "express-ws"
+import { TZDate } from "@date-fns/tz";
 
 const app = express()
 
@@ -114,7 +115,7 @@ async function finishGame(bet, stopped, betAmount, userId, odds) {
       }
     );
   } else {
-    db.run(
+    db.run( 
       `UPDATE users
      SET coins = coins - max(coins, ?)
      WHERE id = ?`,
@@ -163,7 +164,8 @@ async function startGame() {
     if (!tripData.route) {
       return { error: "Could not get trip data", autoReload: true }
     }
-    const date = new Date(Date.now())
+    const date = new TZDate(Date.now(),"Europe/Helsinki")
+    console.log(new Date(), date)
     const now = date.getHours() * 3600 + date.getMinutes() * 60
     const next_stop = tripData.stoptimesForDate.find(t => (t.realtimeArrival || t.scheduledArrival) > now + 60)
 
@@ -273,7 +275,7 @@ function handleMessage(topic, message) {
 
 
 async function addStopWeight(stopID, stopped = false, routeID) {
-  const date = new Date(Date.now())
+  const date = new TZDate(Date.now(), "Europe/Helsinki")
   const isWeekday = date.getDay() >= 1 && date.getDay() <= 5
   const hour = date.getHours()
   db.run(
@@ -293,7 +295,7 @@ async function addStopWeight(stopID, stopped = false, routeID) {
   //console.log(stopID, routeID, isWeekday ? "weekday" : "weekend", hour, stopped ? "s" : "n")
 }
 async function getStopWeight(stopID, routeID) {
-  const date = new Date(Date.now())
+  const date = new TZDate(Date.now(), "Europe/Helsinki")
   const isWeekday = date.getDay() >= 1 && date.getDay() <= 5
   const hour = date.getHours()
 
