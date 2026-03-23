@@ -318,7 +318,7 @@ function endGame(stopped, gameSocket, mqttClient) {
 
     data.odds.m = data.odds[stopped ? "s" : "n"]
     getCoins().then(coins => {
-        data.user.coins = coins.coins
+        data.user.coins = coins.coins || "0"
         sideBarMode(bet == stopped ? "game_won" : "game_lost")
     })
 }

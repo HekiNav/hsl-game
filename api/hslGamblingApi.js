@@ -80,7 +80,6 @@ export default function () {
       getUserCoins(req.query.user).then(coins => {
         res.json({ coins: coins })
       })
-
     })
     app.get("/status", (req, res) => {
       res.json(statusData)
@@ -109,7 +108,7 @@ async function finishGame(bet, stopped, betAmount, userId, odds) {
       `UPDATE users
      SET coins = floor(coins + max(coins, ?) * ?)
      WHERE id = ?`,
-      [betAmount, multiplier, userId], (a, err) => {
+      [betAmount, multiplier - 1, userId], (a, err) => {
         if (err) console.error(err)
         if (a) console.error(a)
       }
@@ -167,7 +166,7 @@ async function startGame() {
     const date = new TZDate(Date.now(),"Europe/Helsinki")
     console.log(new Date(), date)
     const now = date.getHours() * 3600 + date.getMinutes() * 60
-    const next_stop = tripData.stoptimesForDate.find(t => (t.realtimeArrival || t.scheduledArrival) > now + 60)
+    const next_stop = tripData.stoptimesForDate.find(t => (t.realtimeArrival || t.scheduledArrival) > now + 10)
 
     if (!next_stop) {
       return { error: "Could not get next stop", autoReload: true }
